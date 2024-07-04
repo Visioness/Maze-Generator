@@ -2,7 +2,7 @@ import pygame
 import random
 
 
-DELAY = 120
+DELAY = 10
 
 class Cell:
     def __init__(self, row, column, width, height, color=(150, 150, 150)):
@@ -13,8 +13,11 @@ class Cell:
         self.height = height
         self.is_visited = False
         self.walls = {"top": True, "right": True, "bottom": True, "left": True}
+        
+        self.g_score = None
+        self.h_score = None
 
-    def draw(self, screen, cell_size, start_pos):
+    def draw(self, screen, cell_size, start_pos, font):
         x = self.column * cell_size + start_pos[0]
         y = self.row * cell_size + start_pos[1]
 
@@ -31,6 +34,10 @@ class Cell:
         if self.walls["left"]:
             pygame.draw.line(screen, line_color, (x, y), (x, y + cell_size), 4)
 
+        if self.g_score is not None and self.h_score is not None:
+            f_score_text = font.render(f"{self.g_score} + {self.h_score}", True, (0, 0, 0))
+            screen.blit(f_score_text, (x + cell_size // 6, y + cell_size // 4))
+
 
 class Maze:
     def __init__(self, screen_size, screen, cell_size=50, padding=20):
@@ -41,6 +48,7 @@ class Maze:
         self.rows = (screen_size[1] - 2 * padding) // cell_size
         self.columns = (screen_size[0] - 2 * padding) // cell_size
         self.grid = [[Cell(row, column, self.cell_size, self.cell_size) for column in range(self.columns)] for row in range(self.rows)]
+        self.font = pygame.font.SysFont('Arial', 12, bold=True)
 
     def draw(self):
         self.start_position = ((((self.screen_size[0] - (self.padding * 2)) % self.cell_size) / 2 + self.padding),
@@ -50,7 +58,7 @@ class Maze:
 
         for row in self.grid:
             for cell in row:
-                cell.draw(self.screen, self.cell_size, self.start_position)
+                cell.draw(self.screen, self.cell_size, self.start_position, self.font)
 
     def update_screen(self, delay=0):
         self.draw()
